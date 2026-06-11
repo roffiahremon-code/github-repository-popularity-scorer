@@ -13,7 +13,15 @@ A Spring Boot REST API that queries the GitHub Search API and returns repositori
 ./mvnw spring-boot:run
 ```
 
-The server starts on `http://localhost:8080`.
+The server starts on `http://localhost:8081`.
+
+### API documentation
+
+Interactive Swagger UI is available at:
+
+```
+http://localhost:8081/swagger-ui/index.html
+```
 
 ## Endpoint
 
@@ -29,7 +37,7 @@ GET /api/repositories/popular?language=<language>&createdAfter=<YYYY-MM-DD>
 ### Example request
 
 ```bash
-curl "http://localhost:8080/api/repositories/popular?language=Java&createdAfter=2024-01-01"
+curl "http://localhost:8081/api/repositories/popular?language=Java&createdAfter=2024-01-01"
 ```
 
 ### Example response
