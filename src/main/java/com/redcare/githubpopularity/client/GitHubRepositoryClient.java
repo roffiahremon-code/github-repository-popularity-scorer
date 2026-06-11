@@ -39,8 +39,6 @@ public class GitHubRepositoryClient {
                                   response.getStatusCode());
                         })
                   .body(GitHubSearchResponse.class);
-        } catch (GitHubApiException e) {
-            throw e;
         } catch (ResourceAccessException e) {
             throw new GitHubApiException("GitHub API is unreachable", e);
         }

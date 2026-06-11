@@ -80,7 +80,7 @@ class RepositoryPopularityServiceTest {
               .thenReturn(new GitHubSearchResponse(1, false, List.of(repoDto)));
         when(popularityScoreService.calculateScore(100, 50, UPDATED_AT)).thenReturn(75.0);
 
-        ScoredRepositoryResponse result = service.getRepositoriesByPopularity("Java", CREATED_AFTER).get(0);
+        ScoredRepositoryResponse result = service.getRepositoriesByPopularity("Java", CREATED_AFTER).getFirst();
 
         assertThat(result.id()).isEqualTo(42L);
         assertThat(result.name()).isEqualTo("my-repo");
@@ -106,7 +106,7 @@ class RepositoryPopularityServiceTest {
               .thenReturn(new GitHubSearchResponse(1, false, List.of(repoDto)));
         when(popularityScoreService.calculateScore(10, 5, UPDATED_AT)).thenReturn(10.0);
 
-        ScoredRepositoryResponse result = service.getRepositoriesByPopularity("Java", CREATED_AFTER).get(0);
+        ScoredRepositoryResponse result = service.getRepositoriesByPopularity("Java", CREATED_AFTER).getFirst();
 
         assertThat(result.owner()).isNull();
     }
