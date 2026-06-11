@@ -1,6 +1,7 @@
 package com.redcare.githubpopularity.service;
 
 import com.redcare.githubpopularity.config.PopularityWeightsProperties;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import org.springframework.stereotype.Service;
@@ -9,16 +10,19 @@ import org.springframework.stereotype.Service;
 public class PopularityScoreService {
 
     private final PopularityWeightsProperties popularityWeightsProperties;
+    private final Clock clock;
 
-    public PopularityScoreService(final PopularityWeightsProperties popularityWeightsProperties) {
+    public PopularityScoreService(final PopularityWeightsProperties popularityWeightsProperties, final Clock clock) {
         this.popularityWeightsProperties = popularityWeightsProperties;
+        this.clock = clock;
     }
 
     public double calculateScore(final int stars, final int forks, final Instant updatedAt) {
         double recencyScore = calculateRecencyScore(updatedAt);
-        return (stars * popularityWeightsProperties.stars())
+        double score = (stars * popularityWeightsProperties.stars())
               + (forks * popularityWeightsProperties.forks())
               + (recencyScore * popularityWeightsProperties.recency());
+        return Math.round(score * 100.0) / 100.0;
     }
 
     private double calculateRecencyScore(final Instant updatedAt) {
@@ -26,24 +30,7 @@ public class PopularityScoreService {
             return 0;
         }
 
-        long daysSinceUpdate = ChronoUnit.DAYS.between(updatedAt, Instant.now());
-
-        if (daysSinceUpdate <= 30) {
-            return 100;
-        }
-
-        if (daysSinceUpdate <= 90) {
-            return 75;
-        }
-
-        if (daysSinceUpdate <= 180) {
-            return 50;
-        }
-
-        if (daysSinceUpdate <= 365) {
-            return 25;
-        }
-
-        return 0;
+        long daysSinceUpdate = ChronoUnit.DAYS.between(updatedAt, Instant.now(clock));
+        return Math.clamp(100 * (1 - daysSinceUpdate / popularityWeightsProperties.recencyMaxDays()), 0, 100);
     }
 }

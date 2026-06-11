@@ -46,7 +46,7 @@ public class RepositoryPopularityService {
         return results;
     }
 
-    public ScoredRepositoryResponse createScoredResponse(final GitHubRepositoryDto repository) {
+    private ScoredRepositoryResponse createScoredResponse(final GitHubRepositoryDto repository) {
         double score = popularityScoreService.calculateScore(repository.stargazersCount(), repository.forksCount(), repository.updatedAt());
         log.debug("Scored repository " + repository.fullName() + ": score=" + score
               + " (stars=" + repository.stargazersCount() + ", forks=" + repository.forksCount() + ", updatedAt=" + repository.updatedAt() + ")");
