@@ -118,3 +118,25 @@ The maximum number of results is `per-page × max-pages` (default: 90). GitHub's
 ```bash
 ./mvnw test
 ```
+
+## Future improvements / TODOs
+
+The current implementation focuses on the core challenge requirements:
+querying GitHub repositories, 
+applying a configurable popularity score, 
+returning ranked results, 
+and covering the main behavior with tests.
+
+The following improvements are intentionally left as future work:
+
+- **Improve upstream error semantics**  
+  GitHub API failures are currently handled as upstream dependency errors. A production version could handle GitHub rate-limit responses more explicitly, for example by returning a clearer `429 Too Many Requests` response when GitHub rate-limit headers indicate that the limit has been reached.
+
+- **Add configuration property validation**  
+  Configuration values such as `github.api.per-page`, `github.api.max-pages`, and popularity score weights could be validated at startup using bean validation annotations. This would prevent invalid runtime configuration such as zero or negative page sizes, negative weights, or an invalid recency window.
+
+- **Add caching for repeated searches**  
+  Popular repository searches for the same language and creation date could be cached for a short period to reduce GitHub API calls, improve response time, and lower the chance of hitting GitHub rate limits.
+
+- **Improve pagination strategy**  
+  The current implementation fetches a configured number of GitHub result pages and ranks repositories within that fetched window. A production version could expose pagination parameters to API consumers, return pagination metadata, or support cursor/continuation-style fetching so clients can explore more results without increasing response time or GitHub API usage too much.
