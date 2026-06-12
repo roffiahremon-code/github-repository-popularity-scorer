@@ -43,22 +43,26 @@ curl "http://localhost:8081/api/repositories/popular?language=Java&createdAfter=
 ### Example response
 
 ```json
-[
-  {
-    "id": 123456,
-    "name": "my-repo",
-    "fullName": "owner/my-repo",
-    "owner": "owner",
-    "description": "An awesome Java project",
-    "language": "Java",
-    "htmlUrl": "https://github.com/owner/my-repo",
-    "stars": 980,
-    "forks": 120,
-    "createdAt": "2024-03-15T10:00:00Z",
-    "updatedAt": "2026-05-01T08:30:00Z",
-    "popularityScore": 624.8
-  }
-]
+{
+  "correlationId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "total": 1,
+  "repositories": [
+    {
+      "id": 123456,
+      "name": "my-repo",
+      "fullName": "owner/my-repo",
+      "owner": "owner",
+      "description": "An awesome Java project",
+      "language": "Java",
+      "htmlUrl": "https://github.com/owner/my-repo",
+      "stars": 980,
+      "forks": 120,
+      "createdAt": "2024-03-15T10:00:00Z",
+      "updatedAt": "2026-05-01T08:30:00Z",
+      "popularityScore": 624.8
+    }
+  ]
+}
 ```
 
 Results are sorted by `popularityScore` descending.
@@ -86,13 +90,28 @@ Weights can be overridden in `application.properties` or via environment variabl
 POPULARITY_WEIGHTS_STARS=0.5 POPULARITY_WEIGHTS_FORKS=0.4 ./mvnw spring-boot:run
 ```
 
+## Pagination
+
+The API fetches multiple pages from GitHub to broaden the result set before scoring. This is controlled by two properties:
+
+| Property              | Default | Description                              |
+|-----------------------|---------|------------------------------------------|
+| `github.api.per-page` | `30`    | Number of results per GitHub API page    |
+| `github.api.max-pages`| `3`     | Maximum number of pages to fetch         |
+
+With the defaults, up to **90 repositories** are fetched per request, scored, and returned sorted by popularity score. Pagination stops early if GitHub returns fewer results than `per-page`, indicating no further pages exist.
+
+### Result limit
+
+The maximum number of results is `per-page × max-pages` (default: 90). GitHub's Search API itself caps results at 1,000 per query regardless of pagination, and unauthenticated requests are subject to stricter rate limits. Increasing `max-pages` will improve coverage but increases the number of API calls made per request and the risk of hitting GitHub's secondary rate limit.
+
 ## Assumptions and tradeoffs
 
-- The application uses GitHub's public Search API and does not require authentication. The unauthenticated rate limit is 10 requests/minute for search.
-- Only the first page of results is fetched, controlled by `github.api.per-page`.
+- The application uses GitHub's public Search API. Without a token the unauthenticated rate limit is 60 requests/hour; with a token it increases to 5,000/hour. Set `GITHUB_TOKEN` to authenticate.
 - Scores are calculated in memory after fetching results from GitHub.
 - Stars and forks have a larger impact than recency because they are stronger popularity signals.
 - Recency is calculated using `updated_at` and decays linearly to 0 over `popularity.weights.recency-max-days` days.
+- Results are limited to `per-page × max-pages` repositories. Repositories outside this window are not scored, so the top-ranked result is the most popular within the fetched set, not necessarily across all of GitHub.
 
 ## Running the tests
 
