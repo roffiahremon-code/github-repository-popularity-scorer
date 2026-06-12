@@ -7,14 +7,14 @@ import com.redcare.githubpopularity.dto.github.GitHubSearchResponse;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RepositoryPopularityService {
 
-    private static final Log log = LogFactory.getLog(RepositoryPopularityService.class);
+    private static final Logger log = LoggerFactory.getLogger(RepositoryPopularityService.class);
 
     private final GitHubRepositoryClient gitHubRepositoryClient;
     private final PopularityScoreService popularityScoreService;
@@ -25,16 +25,16 @@ public class RepositoryPopularityService {
     }
 
     public List<ScoredRepositoryResponse> getRepositoriesByPopularity(final String language, final LocalDate createdAfter) {
-        log.debug("Fetching repositories for language=" + language + ", createdAfter=" + createdAfter);
+        log.debug("Fetching repositories for language={}, createdAfter={}", language, createdAfter);
 
         GitHubSearchResponse response = gitHubRepositoryClient.searchRepositories(language, createdAfter);
 
         if (response == null || response.items() == null) {
-            log.warn("GitHub API returned null response for language=" + language + ", createdAfter=" + createdAfter);
+            log.warn("GitHub API returned null response for language={}, createdAfter={}", language, createdAfter);
             return List.of();
         }
 
-        log.debug("GitHub API returned " + response.items().size() + " repositories");
+        log.debug("GitHub API returned {} repositories", response.items().size());
 
         List<ScoredRepositoryResponse> results = response.items()
               .stream()
@@ -42,14 +42,14 @@ public class RepositoryPopularityService {
               .sorted(Comparator.comparingDouble(ScoredRepositoryResponse::popularityScore).reversed())
               .toList();
 
-        log.debug("Returning " + results.size() + " scored repositories");
+        log.debug("Returning {} scored repositories", results.size());
         return results;
     }
 
     private ScoredRepositoryResponse createScoredResponse(final GitHubRepositoryDto repository) {
         double score = popularityScoreService.calculateScore(repository.stargazersCount(), repository.forksCount(), repository.updatedAt());
-        log.debug("Scored repository " + repository.fullName() + ": score=" + score
-              + " (stars=" + repository.stargazersCount() + ", forks=" + repository.forksCount() + ", updatedAt=" + repository.updatedAt() + ")");
+        log.debug("Scored repository {}: score={} (stars={}, forks={}, updatedAt={})",
+              repository.fullName(), score, repository.stargazersCount(), repository.forksCount(), repository.updatedAt());
         return new ScoredRepositoryResponse(
               repository.id(),
               repository.name(),

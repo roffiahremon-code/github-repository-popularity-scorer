@@ -2,11 +2,14 @@ package com.redcare.githubpopularity.controller;
 
 import com.redcare.githubpopularity.api.ScoredRepositoryResponse;
 import com.redcare.githubpopularity.service.RepositoryPopularityService;
+import com.redcare.githubpopularity.validation.MinYear;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.validation.annotation.Validated;
@@ -18,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RepositoryPopularityController {
 
-    private static final Log log = LogFactory.getLog(RepositoryPopularityController.class);
+    private static final Logger log = LoggerFactory.getLogger(RepositoryPopularityController.class);
 
     private final RepositoryPopularityService repositoryPopularityService;
 
@@ -28,10 +31,10 @@ public class RepositoryPopularityController {
 
     @GetMapping("/api/repositories/popular")
     public List<ScoredRepositoryResponse> getRepositoriesByScore(
-          @RequestParam @NotBlank final String language,
-          @RequestParam @DateTimeFormat(iso = ISO.DATE) final LocalDate createdAfter) {
+          @RequestParam @NotBlank @Pattern(regexp = "[\\w.+#\\-]+", message = "must contain only letters, digits, or the characters . + # -") final String language,
+          @RequestParam @PastOrPresent @MinYear(2008) @DateTimeFormat(iso = ISO.DATE) final LocalDate createdAfter) {
 
-        log.info("Getting repositories by score for language: " + language + " and created after: " + createdAfter);
+        log.info("Getting repositories by score for language: {} and created after: {}", language, createdAfter);
         return repositoryPopularityService.getRepositoriesByPopularity(language, createdAfter);
     }
 
