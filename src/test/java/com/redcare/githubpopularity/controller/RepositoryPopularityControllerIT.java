@@ -109,9 +109,21 @@ class RepositoryPopularityControllerIT {
     }
 
     @Test
+    void getRepositoriesByScore_languageWithSpaces_returns200() throws Exception {
+        when(gitHubRepositoryClient.searchRepositories(eq("Jupyter Notebook"), any()))
+              .thenReturn(List.of(repo(1L, "notebook-repo", 200, 30)));
+
+        mockMvc.perform(get(URL)
+                    .param("language", "Jupyter Notebook")
+                    .param("createdAfter", "2024-01-01"))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.total").value(1));
+    }
+
+    @Test
     void getRepositoriesByScore_invalidLanguage_returns400() throws Exception {
         mockMvc.perform(get(URL)
-                    .param("language", "Java forks:>1000")
+                    .param("language", "Java\" forks:>1000 \"")
                     .param("createdAfter", "2024-01-01"))
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.correlationId", notNullValue()));

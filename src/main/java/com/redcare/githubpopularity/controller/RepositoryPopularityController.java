@@ -33,7 +33,7 @@ public class RepositoryPopularityController {
 
     @GetMapping("/api/repositories/popular")
     public PopularRepositoriesResponse getRepositoriesByScore(
-          @RequestParam @NotBlank @Pattern(regexp = "[\\w.+#\\-]+", message = "must contain only letters, digits, or the characters . + # -") final String language,
+          @RequestParam @NotBlank @Pattern(regexp = "[\\w.+#\\- ]+", message = "must contain only letters, digits, spaces, or the characters . + # -") final String language,
           @RequestParam @PastOrPresent @MinYear(2008) @DateTimeFormat(iso = ISO.DATE) final LocalDate createdAfter) {
 
         log.info("Getting repositories by score for language: {} and created after: {}", language, createdAfter);

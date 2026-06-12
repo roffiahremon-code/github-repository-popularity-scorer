@@ -129,7 +129,7 @@ public class GitHubRepositoryClient {
 
     private String buildSearchQuery(final String language, final LocalDate createdAfter) {
         final List<String> qualifiers = new ArrayList<>();
-        qualifiers.add("language:" + language);
+        qualifiers.add("language:\"" + language.replace("\"", "\\\"") + "\"");
         qualifiers.add("created:>=" + createdAfter);
         return String.join(" ", qualifiers);
     }
