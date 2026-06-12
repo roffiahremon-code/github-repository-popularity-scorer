@@ -3,6 +3,7 @@ package com.redcare.githubpopularity.exception;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -22,7 +23,7 @@ public class GlobalExceptionHandler {
               ? HttpStatus.BAD_GATEWAY
               : HttpStatus.SERVICE_UNAVAILABLE;
 
-        return ProblemDetail.forStatusAndDetail(status, e.getMessage());
+        return withCorrelationId(ProblemDetail.forStatusAndDetail(status, e.getMessage()));
     }
 
     @ExceptionHandler({
@@ -31,6 +32,15 @@ public class GlobalExceptionHandler {
           MissingServletRequestParameterException.class
     })
     ProblemDetail handleBadRequest(final Exception e) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+        log.warn("Bad request: {}", e.getMessage());
+        return withCorrelationId(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage()));
+    }
+
+    private ProblemDetail withCorrelationId(final ProblemDetail problem) {
+        String correlationId = MDC.get("correlationId");
+        if (correlationId != null) {
+            problem.setProperty("correlationId", correlationId);
+        }
+        return problem;
     }
 }

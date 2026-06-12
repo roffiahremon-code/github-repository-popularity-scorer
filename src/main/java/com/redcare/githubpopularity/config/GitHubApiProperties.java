@@ -8,7 +8,9 @@ public record GitHubApiProperties(
       String searchRepoPath,
       String sort,
       String order,
-      int perPage
+      int perPage,
+      int maxPages,
+      String token
 ) {
 
 }

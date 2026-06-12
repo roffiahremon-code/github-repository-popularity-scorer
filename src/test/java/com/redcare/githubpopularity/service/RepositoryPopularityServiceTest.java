@@ -4,7 +4,6 @@ import com.redcare.githubpopularity.api.ScoredRepositoryResponse;
 import com.redcare.githubpopularity.client.GitHubRepositoryClient;
 import com.redcare.githubpopularity.dto.github.GitHubOwnerDto;
 import com.redcare.githubpopularity.dto.github.GitHubRepositoryDto;
-import com.redcare.githubpopularity.dto.github.GitHubSearchResponse;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -39,18 +38,8 @@ class RepositoryPopularityServiceTest {
     }
 
     @Test
-    void getRepositoriesByPopularity_nullResponse_returnsEmptyList() {
-        when(gitHubRepositoryClient.searchRepositories("Java", CREATED_AFTER)).thenReturn(null);
-
-        List<ScoredRepositoryResponse> result = service.getRepositoriesByPopularity("Java", CREATED_AFTER);
-
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void getRepositoriesByPopularity_nullItems_returnsEmptyList() {
-        when(gitHubRepositoryClient.searchRepositories("Java", CREATED_AFTER))
-              .thenReturn(new GitHubSearchResponse(0, false, null));
+    void getRepositoriesByPopularity_emptyResponse_returnsEmptyList() {
+        when(gitHubRepositoryClient.searchRepositories("Java", CREATED_AFTER)).thenReturn(List.of());
 
         List<ScoredRepositoryResponse> result = service.getRepositoriesByPopularity("Java", CREATED_AFTER);
 
@@ -62,7 +51,7 @@ class RepositoryPopularityServiceTest {
         GitHubRepositoryDto lowScoreRepo = repo(1L, "low-score", 10, 5);
         GitHubRepositoryDto highScoreRepo = repo(2L, "high-score", 500, 200);
         when(gitHubRepositoryClient.searchRepositories("Java", CREATED_AFTER))
-              .thenReturn(new GitHubSearchResponse(2, false, List.of(lowScoreRepo, highScoreRepo)));
+              .thenReturn(List.of(lowScoreRepo, highScoreRepo));
         when(popularityScoreService.calculateScore(10, 5, UPDATED_AT)).thenReturn(20.0);
         when(popularityScoreService.calculateScore(500, 200, UPDATED_AT)).thenReturn(360.0);
 
@@ -77,7 +66,7 @@ class RepositoryPopularityServiceTest {
     void getRepositoriesByPopularity_mapsAllFieldsCorrectly() {
         GitHubRepositoryDto repoDto = repo(42L, "my-repo", 100, 50);
         when(gitHubRepositoryClient.searchRepositories("Java", CREATED_AFTER))
-              .thenReturn(new GitHubSearchResponse(1, false, List.of(repoDto)));
+              .thenReturn(List.of(repoDto));
         when(popularityScoreService.calculateScore(100, 50, UPDATED_AT)).thenReturn(75.0);
 
         ScoredRepositoryResponse result = service.getRepositoriesByPopularity("Java", CREATED_AFTER).getFirst();
@@ -103,7 +92,7 @@ class RepositoryPopularityServiceTest {
               1L, "no-owner", "owner/no-owner", null, "https://github.com/owner/no-owner",
               "desc", "Java", 10, 5, CREATED_AT, UPDATED_AT);
         when(gitHubRepositoryClient.searchRepositories("Java", CREATED_AFTER))
-              .thenReturn(new GitHubSearchResponse(1, false, List.of(repoDto)));
+              .thenReturn(List.of(repoDto));
         when(popularityScoreService.calculateScore(10, 5, UPDATED_AT)).thenReturn(10.0);
 
         ScoredRepositoryResponse result = service.getRepositoriesByPopularity("Java", CREATED_AFTER).getFirst();

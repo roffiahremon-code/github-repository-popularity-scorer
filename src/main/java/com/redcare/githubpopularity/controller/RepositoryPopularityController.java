@@ -1,5 +1,6 @@
 package com.redcare.githubpopularity.controller;
 
+import com.redcare.githubpopularity.api.PopularRepositoriesResponse;
 import com.redcare.githubpopularity.api.ScoredRepositoryResponse;
 import com.redcare.githubpopularity.service.RepositoryPopularityService;
 import com.redcare.githubpopularity.validation.MinYear;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.validation.annotation.Validated;
@@ -30,12 +32,13 @@ public class RepositoryPopularityController {
     }
 
     @GetMapping("/api/repositories/popular")
-    public List<ScoredRepositoryResponse> getRepositoriesByScore(
+    public PopularRepositoriesResponse getRepositoriesByScore(
           @RequestParam @NotBlank @Pattern(regexp = "[\\w.+#\\-]+", message = "must contain only letters, digits, or the characters . + # -") final String language,
           @RequestParam @PastOrPresent @MinYear(2008) @DateTimeFormat(iso = ISO.DATE) final LocalDate createdAfter) {
 
         log.info("Getting repositories by score for language: {} and created after: {}", language, createdAfter);
-        return repositoryPopularityService.getRepositoriesByPopularity(language, createdAfter);
+        List<ScoredRepositoryResponse> repositories = repositoryPopularityService.getRepositoriesByPopularity(language, createdAfter);
+        return new PopularRepositoriesResponse(MDC.get("correlationId"), repositories.size(), repositories);
     }
 
 

@@ -15,10 +15,19 @@ public class RestClientConfig {
 
     @Bean
     public RestClient githubRestClient(GitHubApiProperties gitHubApiProperties) {
-        return RestClient.builder()
+        RestClient.Builder builder = RestClient.builder()
               .baseUrl(gitHubApiProperties.baseUrl())
               .defaultHeader("Accept", "application/vnd.github+json")
-              .defaultHeader("User-Agent", "github-repo-popularity-scorer")
-              .build();
+              .defaultHeader("User-Agent", "github-repo-popularity-scorer");
+
+        if (hasToken(gitHubApiProperties)) {
+            builder.defaultHeader("Authorization", "Bearer " + gitHubApiProperties.token());
+        }
+
+        return builder.build();
+    }
+
+    private boolean hasToken(GitHubApiProperties gitHubApiProperties) {
+        return gitHubApiProperties.token() != null && !gitHubApiProperties.token().isBlank();
     }
 }
