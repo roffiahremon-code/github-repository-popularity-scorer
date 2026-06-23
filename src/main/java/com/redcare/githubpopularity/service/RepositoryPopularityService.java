@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.redcare.githubpopularity.config.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +20,10 @@ public class RepositoryPopularityService {
     private final GitHubRepositoryClient gitHubRepositoryClient;
     private final PopularityScoreService popularityScoreService;
 
+    @Cacheable(
+          value = CacheConfig.GITHUB_REPOSITORIES,
+          key = "#language.toLowerCase() + '_' + #createdAfter"
+    )
     public List<ScoredRepositoryResponse> getRepositoriesByPopularity(final String language, final LocalDate createdAfter) {
         log.debug("Fetching repositories for language={}, createdAfter={}", language, createdAfter);
 
