@@ -31,7 +31,6 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } finally {
-            response.setHeader(CORRELATION_ID_HEADER, correlationId);
             MDC.remove(CORRELATION_ID_MDC_KEY);
         }
     }

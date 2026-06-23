@@ -6,32 +6,26 @@ import com.redcare.githubpopularity.dto.github.GitHubRepositoryDto;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class RepositoryPopularityService {
-
-    private static final Logger log = LoggerFactory.getLogger(RepositoryPopularityService.class);
 
     private final GitHubRepositoryClient gitHubRepositoryClient;
     private final PopularityScoreService popularityScoreService;
 
-    public RepositoryPopularityService(final GitHubRepositoryClient gitHubRepositoryClient,
-          final PopularityScoreService popularityScoreService) {
-        this.gitHubRepositoryClient = gitHubRepositoryClient;
-        this.popularityScoreService = popularityScoreService;
-    }
-
     public List<ScoredRepositoryResponse> getRepositoriesByPopularity(final String language, final LocalDate createdAfter) {
         log.debug("Fetching repositories for language={}, createdAfter={}", language, createdAfter);
 
-        List<GitHubRepositoryDto> items = gitHubRepositoryClient.searchRepositories(language, createdAfter);
+        final List<GitHubRepositoryDto> items = gitHubRepositoryClient.searchRepositories(language, createdAfter);
 
         log.debug("GitHub API returned {} repositories", items.size());
 
-        List<ScoredRepositoryResponse> results = items
+        final List<ScoredRepositoryResponse> results = items
               .stream()
               .map(this::createScoredResponse)
               .sorted(Comparator.comparingDouble(ScoredRepositoryResponse::popularityScore).reversed())
@@ -42,7 +36,7 @@ public class RepositoryPopularityService {
     }
 
     private ScoredRepositoryResponse createScoredResponse(final GitHubRepositoryDto repository) {
-        double score = popularityScoreService.calculateScore(repository.stargazersCount(), repository.forksCount(), repository.updatedAt());
+        final double score = popularityScoreService.calculateScore(repository.stargazersCount(), repository.forksCount(), repository.updatedAt());
         log.debug("Scored repository {}: score={} (stars={}, forks={}, updatedAt={})",
               repository.fullName(), score, repository.stargazersCount(), repository.forksCount(), repository.updatedAt());
         return new ScoredRepositoryResponse(

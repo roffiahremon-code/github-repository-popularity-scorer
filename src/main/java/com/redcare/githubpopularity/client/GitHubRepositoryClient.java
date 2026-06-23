@@ -9,8 +9,8 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
@@ -20,20 +20,15 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriBuilder;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class GitHubRepositoryClient {
 
-    private static final Logger log = LoggerFactory.getLogger(GitHubRepositoryClient.class);
     private static final String X_RATE_LIMIT_REMAINING = "X-RateLimit-Remaining";
     private static final String X_RATE_LIMIT_RESET = "X-RateLimit-Reset";
 
     private final GitHubApiProperties gitHubApiProperties;
     private final RestClient gitHubRestClient;
-
-    public GitHubRepositoryClient(final GitHubApiProperties gitHubApiProperties,
-          final RestClient gitHubRestClient) {
-        this.gitHubApiProperties = gitHubApiProperties;
-        this.gitHubRestClient = gitHubRestClient;
-    }
 
     public List<GitHubRepositoryDto> searchRepositories(final String language, final LocalDate createdAfter) {
         final List<GitHubRepositoryDto> allItems = new ArrayList<>();
@@ -118,7 +113,9 @@ public class GitHubRepositoryClient {
     private void handleGitHubError(final HttpRequest httpRequest, final ClientHttpResponse response) throws IOException {
         final String rateLimitRemaining = response.getHeaders().getFirst(X_RATE_LIMIT_REMAINING);
         final String rateLimitReset = response.getHeaders().getFirst(X_RATE_LIMIT_RESET);
-
+        final String body = new String(response.getBody().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        log.error("GitHub API error: method={} uri={} status={} body={}",
+              httpRequest.getMethod(), httpRequest.getURI(), response.getStatusCode(), body);
         throw new GitHubApiException(
               "GitHub API error: " + response.getStatusCode(),
               response.getStatusCode(),

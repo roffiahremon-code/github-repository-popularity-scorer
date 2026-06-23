@@ -9,6 +9,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Validated
+@RequiredArgsConstructor
 @RestController
 public class RepositoryPopularityController {
 
@@ -27,17 +29,13 @@ public class RepositoryPopularityController {
 
     private final RepositoryPopularityService repositoryPopularityService;
 
-    public RepositoryPopularityController(final RepositoryPopularityService repositoryPopularityService) {
-        this.repositoryPopularityService = repositoryPopularityService;
-    }
-
     @GetMapping("/api/repositories/popular")
     public PopularRepositoriesResponse getRepositoriesByScore(
           @RequestParam @NotBlank @Pattern(regexp = "[\\w.+#\\- ]+", message = "must contain only letters, digits, spaces, or the characters . + # -") final String language,
           @RequestParam @PastOrPresent @MinYear(2008) @DateTimeFormat(iso = ISO.DATE) final LocalDate createdAfter) {
 
         log.info("Getting repositories by score for language: {} and created after: {}", language, createdAfter);
-        List<ScoredRepositoryResponse> repositories = repositoryPopularityService.getRepositoriesByPopularity(language, createdAfter);
+        final List<ScoredRepositoryResponse> repositories = repositoryPopularityService.getRepositoriesByPopularity(language, createdAfter);
         return new PopularRepositoriesResponse(MDC.get("correlationId"), repositories.size(), repositories);
     }
 
