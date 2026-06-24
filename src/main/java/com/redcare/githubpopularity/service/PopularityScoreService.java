@@ -28,6 +28,8 @@ public class PopularityScoreService {
         }
 
         final long daysSinceUpdate = ChronoUnit.DAYS.between(updatedAt, Instant.now(clock));
-        return Math.clamp(100 * (1 - daysSinceUpdate / popularityWeightsProperties.recencyMaxDays()), 0, 100);
+        final double recencyMaxDays = popularityWeightsProperties.recencyMaxDays();
+
+        return Math.clamp(100 * (1 - daysSinceUpdate / recencyMaxDays), 0, 100);
     }
 }

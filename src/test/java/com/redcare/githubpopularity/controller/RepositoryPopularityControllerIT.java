@@ -6,10 +6,12 @@ import com.redcare.githubpopularity.dto.github.GitHubRepositoryDto;
 import com.redcare.githubpopularity.exception.GitHubApiException;
 import java.time.Instant;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,8 +37,16 @@ class RepositoryPopularityControllerIT {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     @MockitoBean
     private GitHubRepositoryClient gitHubRepositoryClient;
+
+    @BeforeEach
+    void clearCaches() {
+        cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
+    }
 
     @Test
     void getRepositoriesByScore_validRequest_returns200WithCorrelationId() throws Exception {
