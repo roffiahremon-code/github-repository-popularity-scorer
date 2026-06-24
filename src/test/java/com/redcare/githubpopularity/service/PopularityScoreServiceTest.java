@@ -16,7 +16,7 @@ class PopularityScoreServiceTest {
     private static final double STARS_WEIGHT = 0.6;
     private static final double FORKS_WEIGHT = 0.3;
     private static final double RECENCY_WEIGHT = 0.1;
-    private static final double RECENCY_MAX_DAYS = 365.0;
+    private static final int RECENCY_MAX_DAYS = 365;
 
     private static final Instant NOW = Instant.parse("2026-06-11T12:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
@@ -40,9 +40,9 @@ class PopularityScoreServiceTest {
 
     @Test
     void calculateScore_repoUpdatedHalfwayThroughMaxDays_halfRecencyScore() {
-        long daysAgo = (long) (RECENCY_MAX_DAYS / 2);
+        long daysAgo = (RECENCY_MAX_DAYS / 2);
         Instant updatedAt = NOW.minus(daysAgo, ChronoUnit.DAYS);
-        double expectedRecency = 100 * (1 - daysAgo / RECENCY_MAX_DAYS);
+        double expectedRecency = 100 * (1 - (double) daysAgo / RECENCY_MAX_DAYS);
 
         double score = service.calculateScore(0, 0, updatedAt);
 
@@ -51,7 +51,7 @@ class PopularityScoreServiceTest {
 
     @Test
     void calculateScore_repoUpdatedAtMaxDays_zeroRecencyScore() {
-        Instant updatedAt = NOW.minus((long) RECENCY_MAX_DAYS, ChronoUnit.DAYS);
+        Instant updatedAt = NOW.minus(RECENCY_MAX_DAYS, ChronoUnit.DAYS);
 
         double score = service.calculateScore(0, 0, updatedAt);
 
@@ -60,7 +60,7 @@ class PopularityScoreServiceTest {
 
     @Test
     void calculateScore_repoUpdatedBeyondMaxDays_recencyScoreClampsToZero() {
-        Instant updatedAt = NOW.minus((long) RECENCY_MAX_DAYS + 100, ChronoUnit.DAYS);
+        Instant updatedAt = NOW.minus(RECENCY_MAX_DAYS + 100, ChronoUnit.DAYS);
 
         double score = service.calculateScore(0, 0, updatedAt);
 
@@ -86,7 +86,7 @@ class PopularityScoreServiceTest {
 
     @Test
     void calculateScore_starsAndForksWeightedCorrectly() {
-        Instant updatedAt = NOW.minus((long) RECENCY_MAX_DAYS, ChronoUnit.DAYS);
+        Instant updatedAt = NOW.minus(RECENCY_MAX_DAYS, ChronoUnit.DAYS);
 
         double score = service.calculateScore(200, 80, updatedAt);
 

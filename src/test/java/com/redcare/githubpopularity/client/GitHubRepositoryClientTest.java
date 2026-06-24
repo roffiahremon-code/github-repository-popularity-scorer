@@ -5,6 +5,7 @@ import com.redcare.githubpopularity.dto.github.GitHubRepositoryDto;
 import com.redcare.githubpopularity.exception.GitHubApiException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ class GitHubRepositoryClientTest {
     @BeforeEach
     void setUp() {
         GitHubApiProperties props = new GitHubApiProperties(
-                BASE_URL, SEARCH_PATH, "stars", "desc", PER_PAGE, 3, null);
+                BASE_URL, SEARCH_PATH, "2022-11-28", "stars", "desc", PER_PAGE, 3, Optional.empty());
 
         RestClient.Builder builder = RestClient.builder().baseUrl(BASE_URL);
         server = MockRestServiceServer.bindTo(builder).build();
